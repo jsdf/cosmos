@@ -3,7 +3,7 @@ exports.up = (knex, Promise) ->
   knex.schema.createTable 'documents', (table) ->
     table.increments().primary()
     table.string('name')
-    table.specificType('doc', 'jsonb')
+    table.json('doc', true)
     table.timestamps()
 
 exports.down = (knex, Promise) ->
