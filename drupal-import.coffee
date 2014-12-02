@@ -23,7 +23,12 @@ Promise.map(_.pairs(nodes), ([id, doc]) ->
     doc:
       author: doc.name
       type: doc.type
-      body: doc.body?['und']?[0]?['value']
+      body: do ->
+        body = doc.body?['und']?[0]?['value']
+        if body? 
+          body.replace /[\r]/g, ''
+        else
+          null
       field_image: doc.field_image?['und']?.map((item) ->
         filename: item.filename
         uri: url.parse(item.uri).path

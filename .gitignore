@@ -42,3 +42,5 @@ public/stylesheets/bootstrap.less
 public/stylesheets/style.css
 
 knexfile.*
+
+config.*

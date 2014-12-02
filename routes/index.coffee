@@ -1,42 +1,82 @@
 Bookshelf = require '../bookshelf'
-Document = require '../models/document'
+{knex} = Bookshelf
+_ = require 'lodash'
 React = require 'react'
+Promise = require 'bluebird'
+
+Document = require '../models/document'
+Article = require '../components/article'
 Page = require '../components/page'
 
-renderDoc = (doc) -> React.renderToString React.createElement Page, doc.toJSON()
+render = (component, props) ->
+  React.renderToString React.createElement component, props
+
+respondWithArticle = (req, res, doc) ->
+  config = req.app.get('config')
+  res.format
+    html: ->
+      res.render "layout",
+        title: "#{config?.siteTitle} | #{doc.get 'name'}"
+        content: render Article, doc.toJSON()
+    json: ->
+      res.send doc.toJSON()
+
+pathsDocuments = null # cache
+getPathsDocuments = ->
+  if pathsDocuments?
+    return Promise.resolve pathsDocuments
+
+  pathsDocuments = {}
+  knex('documents')
+    .select(knex.raw("doc->>'path' as path"), 'id')
+    .then (rows) ->
+      rows.forEach (row) ->
+        pathsDocuments[row.path] = row.id
+      pathsDocuments
+
+fetchDocForId = (id) ->  
+  Document
+    .where({id})
+    .fetch()
+
+lookupDocForPath = (reqPath) -> 
+  getPathsDocuments()
+    .then (pathsDocuments) ->
+      id = pathsDocuments[reqPath]
+      unless id?
+        return Promise.reject reqPath
+
+      fetchDocForId(id)
 
 exports.dynamic = (req, res) ->
-  res.render "layout",
-    title: "Page"
-    content: React.renderToString React.createElement Page, id: 'none'
+  lookupDocForPath(req.path)
+    .then (doc) ->
+      respondWithArticle(req, res, doc)
+    .done()
 
 exports.index = (req, res) ->
+  config = req.app.get('config')
+
   Document.Collection.forge()
     .query (q) -> q.orderBy('created_at', 'desc')
     .fetch()
     .then (docs) ->
       res.format
         html: ->
+          title = config?.siteTitle
+
           res.render "layout",
-            title: "index"
-            content: docs.map(renderDoc).join('\n')
+            title: title
+            content: render Page, {title, docs: docs.toJSON()}
         json: ->
           res.send docs.toJSON()
     .done()
 
 exports.doc = (req, res) ->
   {id} = req.params
-  Document
-    .where({id})
-    .fetch()
+  fetchDocForId(id)
     .then (doc) ->
-      res.format
-        html: ->
-          res.render "layout",
-            title: "Document #{id}: #{doc.get 'name'}"
-            content: renderDoc(doc)
-        json: ->
-          res.send doc.toJSON()
+      respondWithArticle(req, res, doc)
     .done()
 
 exports.test = (req, res) -> res.send('Hello World!')
