@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://jsdf.co/article-schema#",
+  "type": "object",
+  "properties": {
+    "body": {
+      "type": "string"
+    },
+    "path": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "author": {
+      "type": "string"
+    },
+    "field_tags": {
+      "type": "array",
+      "items": {}
+    },
+    "field_image": {
+      "type": "object",
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "uri": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "width": {
+          "type": "string"
+        },
+        "height": {
+          "type": "string"
+        },
+        "filemime": {
+          "type": "string"
+        },
+        "filename": {
+          "type": "string"
+        },
+        "filesize": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

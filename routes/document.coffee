@@ -48,13 +48,13 @@ lookupDocForPath = (reqPath) ->
 
       fetchDocForId(id)
 
-exports.dynamic = (req, res) ->
+dynamic = (req, res) ->
   lookupDocForPath(req.path)
     .then (doc) ->
       respondWithArticle(req, res, doc)
     .done()
 
-exports.index = (req, res) ->
+index = (req, res) ->
   config = req.app.get('config')
 
   Document.Collection.forge()
@@ -72,11 +72,15 @@ exports.index = (req, res) ->
           res.send docs.toJSON()
     .done()
 
-exports.doc = (req, res) ->
+show = (req, res) ->
   {id} = req.params
   fetchDocForId(id)
     .then (doc) ->
       respondWithArticle(req, res, doc)
     .done()
 
-exports.test = (req, res) -> res.send('Hello World!')
+module.exports = (app, base) ->
+  app.get "#{base}/:id", show
+  app.get base, index
+_.extend module.exports, {dynamic, index, show}
+

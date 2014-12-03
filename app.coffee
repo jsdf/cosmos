@@ -11,8 +11,8 @@ errorHandler =  require 'errorhandler'
 lessMiddleware = require 'less-middleware'
 extensionToAccept = require 'express-extension-to-accept'
 
-ansicyan = '\x1B[0;36m'
-ansireset = '\x1B[0m'
+ansiCyan = '\x1B[0;36m'
+ansiReset = '\x1B[0m'
 config = require './config'
 
 # all environments
@@ -40,16 +40,18 @@ app.use lessMiddleware(__dirname + '/public')
 app.use express.static(path.join(__dirname, 'public'))
 
 console.log 'env', app.get('env')
-# development only
-app.use errorHandler() if 'development' is app.get('env')
+if 'development' is app.get('env')
+  app.use errorHandler() # development only
 
-routes = require('./routes')
-app.get '/doc/:id', routes.doc
-app.get '/doc', routes.index
-app.get '/', routes.index
-app.get '/*', routes.dynamic
+# register routes
+require('./routes/resources/document')(app, '/resource/doc')
+require('./routes/admin')(app, '/admin')
+documentRoutes = require('./routes/document')
+documentRoutes(app, '/doc')
+app.get '/', documentRoutes.index
+app.get '/*', documentRoutes.dynamic
 
 app.listen port, ->
-  console.log "#{ansicyan}cosmos#{ansireset} existing on port #{port}"
+  console.log "#{ansiCyan}cosmos#{ansiReset} flowing through port #{port}"
 
 process.on 'uncaughtException', (e) -> console.error e.stack
