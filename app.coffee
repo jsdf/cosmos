@@ -11,8 +11,6 @@ errorHandler =  require 'errorhandler'
 lessMiddleware = require 'less-middleware'
 extensionToAccept = require 'express-extension-to-accept'
 
-ansiCyan = '\x1B[0;36m'
-ansiReset = '\x1B[0m'
 config = require './config'
 
 # all environments
@@ -44,14 +42,29 @@ if 'development' is app.get('env')
   app.use errorHandler() # development only
 
 # register routes
-require('./routes/resources/document')(app, '/resource/doc')
-require('./routes/admin')(app, '/admin')
-documentRoutes = require('./routes/document')
-documentRoutes(app, '/doc')
-app.get '/', documentRoutes.index
-app.get '/*', documentRoutes.dynamic
+app.get '/schemas', require('./routes/schemas')
+
+do ->
+  {index, show, create, update, destroy} = require('./routes/resources/document')
+  app.get '/resource/doc', index
+  app.route('/resource/doc/:id')
+    .get show
+    .post create
+    .put update
+    .delete destroy
+
+do ->
+  {index} = require('./routes/admin')
+  app.get '/admin', index
+
+do ->
+  {dynamic, index, show} = require('./routes/document')
+  app.get '/doc/:id', show
+  app.get '/doc', index
+  app.get '/', index
+  app.get '/*', dynamic
 
 app.listen port, ->
+  ansiCyan = '\x1B[0;36m'
+  ansiReset = '\x1B[0m'
   console.log "#{ansiCyan}cosmos#{ansiReset} flowing through port #{port}"
-
-process.on 'uncaughtException', (e) -> console.error e.stack

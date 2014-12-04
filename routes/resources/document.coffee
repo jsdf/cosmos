@@ -17,14 +17,14 @@ index = (req, res) ->
     .fetch()
     .then (docs) ->
       res.send docs.toJSON()
-    .done()
+    .catch -> res.send 500
 
 show = (req, res) ->
   {id} = req.params
   fetchDocForId(id)
     .then (doc) ->
       res.send doc.toJSON()
-    .done()
+    .catch -> res.send 500
 
 create = (req, res) ->
   return res.send(400) if not req.body? or req.body.id?
@@ -32,7 +32,7 @@ create = (req, res) ->
   Document.forge(_.omit(req.body, 'id')).save()
     .then (doc) ->
       res.send doc.toJSON()
-    .done()
+    .catch -> res.send 500
 
 update = (req, res) ->
   {id} = req.params
@@ -46,7 +46,7 @@ update = (req, res) ->
       doc.save()
     .then (doc) ->
       res.send doc.toJSON()
-    .done()
+    .catch -> res.send 500
 
 destroy = (req, res) ->
   {id} = req.params
@@ -59,13 +59,6 @@ destroy = (req, res) ->
       doc.destroy()
     .then (doc) ->
       res.send(204)
-    .done()
+    .catch -> res.send 500
 
-module.exports = (app, base) ->
-  app.get base, index
-  app.route("#{base}/:id")
-    .get show
-    .post create
-    .put update
-    .delete destroy
-_.extend module.exports, {index, show, create, update, destroy}
+module.exports = {index, show, create, update, destroy}

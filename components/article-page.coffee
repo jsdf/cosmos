@@ -4,7 +4,7 @@ Bs = require 'react-bootstrap'
 
 Article = require './article'
 
-Page = React.createClass
+ArticlePage = React.createClass
   renderTeasers: ->
     @props.docs.map (doc) ->
       <Article.Teaser key={doc.id} {...doc} />
@@ -28,4 +28,4 @@ Page = React.createClass
       </Bs.Grid>
     </div>
 
-module.exports = Page
+module.exports = ArticlePage

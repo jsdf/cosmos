@@ -6,33 +6,34 @@ Promise = require 'bluebird'
 
 Document = require '../models/document'
 Article = require '../components/article'
-Page = require '../components/page'
+ArticlePage = require '../components/article-page'
 
-render = (component, props) ->
+getPathsDocumentIds = do ->
+  pathsDocumentIds = null # cache
+  ->
+    if pathsDocumentIds?
+      return Promise.resolve pathsDocumentIds
+
+    pathsDocumentIds = {}
+    knex('documents')
+      .select(knex.raw("doc->>'path' as path"), 'id')
+      .then (rows) ->
+        rows.forEach (row) ->
+          pathsDocumentIds[row.path] = row.id
+        pathsDocumentIds
+
+renderComponent = (component, props) ->
   React.renderToString React.createElement component, props
 
 respondWithArticle = (req, res, doc) ->
   config = req.app.get('config')
   res.format
     html: ->
-      res.render "layout",
+      res.render 'layout',
         title: "#{config?.siteTitle} | #{doc.get 'name'}"
-        content: render Article, doc.toJSON()
+        content: renderComponent Article, doc.toJSON()
     json: ->
       res.send doc.toJSON()
-
-pathsDocuments = null # cache
-getPathsDocuments = ->
-  if pathsDocuments?
-    return Promise.resolve pathsDocuments
-
-  pathsDocuments = {}
-  knex('documents')
-    .select(knex.raw("doc->>'path' as path"), 'id')
-    .then (rows) ->
-      rows.forEach (row) ->
-        pathsDocuments[row.path] = row.id
-      pathsDocuments
 
 fetchDocForId = (id) ->  
   Document
@@ -40,9 +41,9 @@ fetchDocForId = (id) ->
     .fetch()
 
 lookupDocForPath = (reqPath) -> 
-  getPathsDocuments()
-    .then (pathsDocuments) ->
-      id = pathsDocuments[reqPath]
+  getPathsDocumentIds()
+    .then (pathsDocumentIds) ->
+      id = pathsDocumentIds[reqPath]
       unless id?
         return Promise.reject reqPath
 
@@ -52,7 +53,7 @@ dynamic = (req, res) ->
   lookupDocForPath(req.path)
     .then (doc) ->
       respondWithArticle(req, res, doc)
-    .done()
+    .catch -> res.send 500
 
 index = (req, res) ->
   config = req.app.get('config')
@@ -65,22 +66,19 @@ index = (req, res) ->
         html: ->
           title = config?.siteTitle
 
-          res.render "layout",
+          res.render 'layout',
             title: title
-            content: render Page, {title, docs: docs.toJSON()}
+            content: renderComponent ArticlePage, {title, docs: docs.toJSON()}
         json: ->
           res.send docs.toJSON()
-    .done()
+    .catch -> res.send 500
 
 show = (req, res) ->
   {id} = req.params
   fetchDocForId(id)
     .then (doc) ->
       respondWithArticle(req, res, doc)
-    .done()
+    .catch -> res.send 500
 
-module.exports = (app, base) ->
-  app.get "#{base}/:id", show
-  app.get base, index
-_.extend module.exports, {dynamic, index, show}
+module.exports = {dynamic, index, show}
 
