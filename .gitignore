@@ -37,6 +37,7 @@ nbproject
 node_modules
 bower_components
 
+tmp/
 # built css output
 public/stylesheets/bootstrap.less
 public/stylesheets/style.css

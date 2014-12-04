@@ -3,10 +3,8 @@
   <head>
     <title>{{ title }}</title>
     <link rel='stylesheet' href='/stylesheets/style.css' />
-    <!-- <link rel='stylesheet' href='/stylesheets/admin.css' /> -->
-<!-- 
-    <script src="/javascripts/admin.js"></script> 
-     -->
+    <link rel='stylesheet' href='/assets/admin.css' />
+    <script src="/assets/admin.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
   </head>
   <body>

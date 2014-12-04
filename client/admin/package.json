@@ -1,0 +1,10 @@
+{
+  "name": "cosmos-admin",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.coffee",
+  "author": "James Friend <james@jsdf.co> (http://jsdf.co/)",
+  "license": "MIT",
+  "style": ["./index.less"],
+  "transforms" : ["less-css-stream"]
+}
