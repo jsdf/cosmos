@@ -14,7 +14,7 @@ ArticlePage = React.createClass
       <Bs.Grid>
         <Bs.Row>
           <Bs.Col xs={12}>
-            <h1>{@props.title}</h1>
+            <h1>{@props.title} <br /><span className="small">{@props.tagline}</span></h1>
           </Bs.Col>
         </Bs.Row>
       </Bs.Grid>

@@ -5,6 +5,7 @@ React = require 'react'
 Promise = require 'bluebird'
 
 Document = require '../../models/document'
+makeErrorHandler = require '../../lib/util/make-error-handler'
 
 fetchDocForId = (id) ->  
   Document
@@ -17,14 +18,14 @@ index = (req, res) ->
     .fetch()
     .then (docs) ->
       res.send docs.toJSON()
-    .catch -> res.send 500
+    .catch makeErrorHandler(req, res, next)
 
 show = (req, res) ->
   {id} = req.params
   fetchDocForId(id)
     .then (doc) ->
       res.send doc.toJSON()
-    .catch -> res.send 500
+    .catch makeErrorHandler(req, res, next)
 
 create = (req, res) ->
   return res.send(400) if not req.body? or req.body.id?
@@ -32,7 +33,7 @@ create = (req, res) ->
   Document.forge(_.omit(req.body, 'id')).save()
     .then (doc) ->
       res.send doc.toJSON()
-    .catch -> res.send 500
+    .catch makeErrorHandler(req, res, next)
 
 update = (req, res) ->
   {id} = req.params
@@ -46,7 +47,7 @@ update = (req, res) ->
       doc.save()
     .then (doc) ->
       res.send doc.toJSON()
-    .catch -> res.send 500
+    .catch makeErrorHandler(req, res, next)
 
 destroy = (req, res) ->
   {id} = req.params
@@ -59,6 +60,6 @@ destroy = (req, res) ->
       doc.destroy()
     .then (doc) ->
       res.send(204)
-    .catch -> res.send 500
+    .catch makeErrorHandler(req, res, next)
 
 module.exports = {index, show, create, update, destroy}

@@ -7,7 +7,7 @@ methodOverride = require 'method-override'
 session = require 'express-session'
 bodyParser = require 'body-parser'
 formData = require 'multer'
-errorHandler =  require 'errorhandler'
+expressError = require 'express-error'
 lessMiddleware = require 'less-middleware'
 extensionToAccept = require 'express-extension-to-accept'
 
@@ -40,7 +40,11 @@ app.use express.static(path.join(__dirname, 'public'))
 
 console.log 'env', app.get('env')
 if 'development' is app.get('env')
-  app.use errorHandler() # development only
+  app.set 'errorHandler', expressError.express3({contextLinesCount: 3, handleUncaughtException: true})
+  app.use app.get 'errorHandler'
+else
+  app.set 'errorHandler', (err, req, res, next) ->
+    res.sendStatus 500
 
 # register routes
 app.get '/schemas', require('./routes/schemas')
@@ -68,4 +72,4 @@ do ->
 app.listen port, ->
   ansiCyan = '\x1B[0;36m'
   ansiReset = '\x1B[0m'
-  console.log "#{ansiCyan}cosmos#{ansiReset} flowing through port #{port}"
+  console.log "#{ansiCyan}cosmos#{ansiReset} event horizon on port #{port}"

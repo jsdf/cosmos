@@ -7,6 +7,7 @@ Promise = require 'bluebird'
 Document = require '../models/document'
 Article = require '../components/article'
 ArticlePage = require '../components/article-page'
+makeErrorHandler = require '../lib/util/make-error-handler'
 
 getPathsDocumentIds = do ->
   pathsDocumentIds = null # cache
@@ -49,13 +50,13 @@ lookupDocForPath = (reqPath) ->
 
       fetchDocForId(id)
 
-dynamic = (req, res) ->
+dynamic = (req, res, next) ->
   lookupDocForPath(req.path)
     .then (doc) ->
       respondWithArticle(req, res, doc)
-    .catch -> res.send 500
+    .catch makeErrorHandler(req, res, next)
 
-index = (req, res) ->
+index = (req, res, next) ->
   config = req.app.get('config')
 
   Document.Collection.forge()
@@ -65,20 +66,21 @@ index = (req, res) ->
       res.format
         html: ->
           title = config?.siteTitle
+          tagline = config?.siteTagline
 
           res.render 'layout',
-            title: title
-            content: renderComponent ArticlePage, {title, docs: docs.toJSON()}
+            title: "#{title} | #{tagline}"
+            content: renderComponent ArticlePage, {title, tagline, docs: docs.toJSON()}
         json: ->
           res.send docs.toJSON()
-    .catch -> res.send 500
+    .catch makeErrorHandler(req, res, next)
 
-show = (req, res) ->
+show = (req, res, next) ->
   {id} = req.params
   fetchDocForId(id)
     .then (doc) ->
       respondWithArticle(req, res, doc)
-    .catch -> res.send 500
+    .catch makeErrorHandler(req, res, next)
 
 module.exports = {dynamic, index, show}
 
