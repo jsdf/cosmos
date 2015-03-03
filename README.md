@@ -3,7 +3,7 @@ cosmos cms
 
 *postgres 9.4 json documents + reactjs ui = cms*
 
-![mind blown](http://jamesfriend.com.au/files/mind_blown.gif)
+![mind blown](https://jamesfriend.com.au/files/mind_blown.gif)
 
 Okay so I haven't got to far with this project yet but here are the big ideas:
 
